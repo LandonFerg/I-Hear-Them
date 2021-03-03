@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>I-Hear-Them</title>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="../game.css">
+
+  <script src="../js/three.min.js"></script>
+  <script src="../js/AsciiEffect.js"></script>
+  <script src="../js/EffectComposer.js"></script>
+  <script src="../js/ShaderPass.js"></script>
+  <script src="../js/RenderPass.js"></script>
+  <script src="../js/CopyShader.js"></script>
+  <script src="../js/DotScreenShader.js"></script>
+  <script src="../js/GLTFLoader.js"></script>
+  <script src="../js/controls/OrbitControls.js"></script>
+  <script src="../js/controls/DragControls.js"></script>
+  <script src="../js/controls/PointerLockControls.js"></script>
+  <script src="../js/Stats.js"></script>
+
+  <style>
+    #menu {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    }
+
+    #instructions {
+    width: 100%;
+    height: 100%;
+
+    display: -webkit-box;
+    display: -moz-box;
+    display: box;
+
+    -webkit-box-orient: horizontal;
+    -moz-box-orient: horizontal;
+    box-orient: horizontal;
+
+    -webkit-box-pack: center;
+    -moz-box-pack: center;
+    box-pack: center;
+
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    box-align: center;
+
+    color: #ffffff;
+    text-align: center;
+    font-family: Arial;
+    font-size: 14px;
+    line-height: 24px;
+
+    cursor: pointer;
+  }
+  </style>
+</head>
+
+<body bgcolor="#000000">
+  <!-- Nav <h1 style="padding-top: 18px;" class = "">Landon Ferguson</h1> -->
+  <div class="pictureholder noselect">
+
+      <div id="menu">
+        <div id ="instructions">
+          <h1 style="color: white;">PAUSED</h1>
+        </div>
+      </div>
+
+    <canvas id="gameCanvas" style="background-color: white;"></canvas>
+    <div class="textholder">
+      <a href="#" style = "visibility: hidden;">Begin</a>
+    </div>
+  </div>
+    <script src="../js/main.js"></script>
+  <!-- Nav
+   <ul>
+     <li><a style="color: white;" href="/">(Projects)</a></li>
+     <li><a style="color: white;" href="contact">Contact</a></li>
+   </ul> -->
+</body>
+
+</html>
