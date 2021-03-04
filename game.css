@@ -69,6 +69,10 @@ a {
 }
 
 #gameCanvas{
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  
   top:0px; left:0px;
   z-index: 20;
   /* width: 768px;

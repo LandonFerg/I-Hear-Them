@@ -1,8 +1,9 @@
 var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
+renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
 var scene = new THREE.Scene();
 
-scene.background = new THREE.Color('skyblue');
+scene.background = new THREE.Color('rgb(0, 0, 0)');
 
 const gameHolder = document.getElementById( 'gameHolder' );
 var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -15,6 +16,20 @@ camera.position.y = 10;
 var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
 directionalLight.castShadow = true;
 scene.add( directionalLight );
+
+// // pp
+renderer.autoClear = false; // stops everything idk
+var composer = new THREE.EffectComposer(renderer); // define new composer
+composer.addPass(new THREE.RenderPass( scene, camera ));
+
+var effect = new THREE.ShaderPass( THREE.DitherShader );
+//var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+//seffect.uniforms[ 'scale' ].value = 4;
+effect.renderToScreen = true;
+composer.addPass( effect );
+
+// //pp
+
 //
 // var spotLight = new THREE.SpotLight( 0xffffff );
 // spotLight.position.set(0, 100, 0);
@@ -60,6 +75,8 @@ const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
+
+
 
 const onKeyDown = function ( event ) {
 
@@ -136,6 +153,8 @@ THREE.DoubleSide} );
 mesh = new THREE.Mesh(floorGeometry, material);
 mesh.overdraw = true;
 scene.add(mesh);
+
+//const ditherMat = new THREE.DitherShader();
 
 const geometry = new THREE.SphereGeometry( 5, 32, 32 );
 const smaterial = new THREE.MeshLambertMaterial( {color: 0xcccccc} );
@@ -230,6 +249,7 @@ function animate() {
 
 	// required if controls.enableDamping or controls.autoRotate are set to true
 	renderer.render( scene, camera );
+  composer.render( scene, camera );
 	//composer.render(scene,camera)
 	//stats.end(); // end stats
 }
