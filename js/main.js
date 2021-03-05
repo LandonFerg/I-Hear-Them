@@ -2,6 +2,7 @@ var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
 renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
 var scene = new THREE.Scene();
+const loader = new THREE.GLTFLoader(); // used to load custom models
 
 scene.background = new THREE.Color('rgb(0, 0, 0)');
 
@@ -16,6 +17,40 @@ camera.position.y = 10;
 var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
 directionalLight.castShadow = true;
 scene.add( directionalLight );
+
+var spotLight = new THREE.SpotLight( 0xffffff, 0.2 );
+spotLight.position.set(0, 100, 0);
+spotLight.castShadow = true;
+scene.add( spotLight );
+
+var light = new THREE.AmbientLight( 0xcccccc ); // soft white light
+scene.add( light );
+
+// const plight = new THREE.PointLight( 'white', 10, 100 );
+// plight.position.set( 40, 12, 0 );
+// scene.add( light );
+
+// load house
+loader.load( '../objects/house01.glb', function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+  directionalLight.target = gltf.scene;
+} )
+
+loader.load('../objects/curtains.glb', function( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+  //  gltf.scene.translateX
+  directionalLight.target = gltf.scene;
+})
+
+loader.load('../objects/floor.glb', function( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,1,30) // scale here
+  //  gltf.scene.translateX
+  gltf.scene.translateY(0.1);
+  //directionalLight.target = gltf.scene;
+})
 
 // // pp
 renderer.autoClear = false; // stops everything idk
@@ -56,6 +91,7 @@ controls.addEventListener( 'unlock', function () {
 
   blocker.style.display = 'block';
   instructions.style.display = '';
+  console.log(camera.position);
 } );
 
 scene.add( controls.getObject() ); //dk waht this does
@@ -148,7 +184,7 @@ raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1,
 
 let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
 floorGeometry.rotateX( - Math.PI / 2 );
-const material = new THREE.MeshStandardMaterial( {color: 0xffff00, side:
+const material = new THREE.MeshLambertMaterial( {color: 0x1c1c1c, side:
 THREE.DoubleSide} );
 mesh = new THREE.Mesh(floorGeometry, material);
 mesh.overdraw = true;
@@ -156,14 +192,15 @@ scene.add(mesh);
 
 //const ditherMat = new THREE.DitherShader();
 
-const geometry = new THREE.SphereGeometry( 5, 32, 32 );
-const smaterial = new THREE.MeshLambertMaterial( {color: 0xcccccc} );
+const geometry = new THREE.SphereGeometry( 2, 32, 32 );
+const smaterial = new THREE.MeshLambertMaterial( {color: 0x474747, emissive: 0xffffff, emissiveIntensity: 5.0});
 const sphere = new THREE.Mesh( geometry, smaterial );
-sphere.translateZ( -20 );
+sphere.translateZ( -50 );
+sphere.translateX( 20 );
 sphere.translateY( 10 );
 
 scene.add( sphere );
-scene.position.set(0, 100, 100);
+//scene.position.set(0, 100, 100);
 
 // controls.enableDamping = true;
 // controls.target = new THREE.Vector3(0, 0, 0)
@@ -195,7 +232,7 @@ function resizeCanvasToDisplaySize() {
   }
 }
 
-
+// add bloom to make glowing objects glow (add bloom pass before dither?)
 animate();
 function animate() {
 	//stats.begin(); // beging stats

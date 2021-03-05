@@ -31,7 +31,7 @@ THREE.DitherShader = {
             "float grey = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;",
             "grey = grey / 0.039;",
             "grey = floor(grey + 0.5);",
-            "grey = grey * 0.019;",
+            "grey = grey * 0.039;", // 0.39
 
             //"int offset = int(screenSize * cameraRot / cameraFOV);",
 
@@ -43,6 +43,7 @@ THREE.DitherShader = {
 "               int index = (x * 8) + y;", // index of pseudomatrix",
 "               float dither;",
                 "float dither2;",
+                "float dither3;",
 
 "                   if (index <= 0) dither = 0.0;",
 "                   if (index == 1) dither = 48.0;",
@@ -110,18 +111,21 @@ THREE.DitherShader = {
               "      if (index >= 63) dither = 21.0;",
 
      				"dither *= (1.0 / 64.0);", // matrix math",
-
-                    "dither2 = dither + 0.3;", // highlight threshold (19.2 dither)
+                    "dither2 = dither + 0.14;", // 2nd highlight threshold (19.2 dither)
+                    "dither3 = dither + 0.22;", // main highlight threshold (19.2 dither)
 
             // The Threshold // HIGHTLIGHT
-            "if(grey > dither2){",
-              //"gl_FragColor = vec4(0.8);", // MWhite
-              "gl_FragColor = vec4(1, 0.46, 0.15, 1.0);}",
+            "if(grey > dither3){",
+              //"gl_FragColor = vec4(0.8);", // White
+              "gl_FragColor = vec4(1);}",
               
+              "else if(grey > dither2){", // Secondary highlight
+              "gl_FragColor = vec4(1, 0.46, 0.15, 1.0);}", // bright orange
+
               "else if(grey > dither){", // Mid-Tone
-              "gl_FragColor = vec4(1, 0, 0.75, 1.0);}", // Magenta
+              "gl_FragColor = vec4(0.69, 0.04, 0.86, 1.0);}", // Magenta
             "else{",
-              "gl_FragColor = vec4(0.1);}",  // Dark Gray
+              "gl_FragColor = vec4(0.0);}",  // Dark Gray
             //  "gl_FragColor = vec4(0.17,0.25,0.09,1.0);", //Dark Green
               //"gl_FragColor = vec4(0.09,0.15,0.32,1.0);", //Dark Blue
         "}"
