@@ -1,8 +1,46 @@
 var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
 renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
+// If texture is used for color information, set colorspace.  
+
+var progress = document.createElement('div');
+var progressBar = document.createElement('div');
+
+progress.appendChild(progressBar);
+
+document.body.appendChild(progress);
+
+renderer.outputEncoding = THREE.sRGBEncoding;
 var scene = new THREE.Scene();
-const loader = new THREE.GLTFLoader(); // used to load custom models
+const manager = new THREE.LoadingManager();
+const loader = new THREE.GLTFLoader(manager); // used to load custom models
+
+const loadingScreen = document.getElementById("loading");
+
+manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+
+	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+};
+
+manager.onLoad = function ( ) {
+
+	console.log( 'Loading complete!');
+  loadingScreen.style.display = "none";
+};
+
+
+manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+
+	console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+};
+
+manager.onError = function ( url ) {
+
+	console.log( 'There was an error loading ' + url );
+
+};
 
 scene.background = new THREE.Color('rgb(0, 0, 0)');
 
@@ -11,31 +49,23 @@ var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHe
 
 camera.position.y = 10;
 
-//camera.position.set(0,0,0);
 
-// White directional light at half intensity shining from the top.
-var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
+var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 0.1 );
 directionalLight.castShadow = true;
 scene.add( directionalLight );
 
-var spotLight = new THREE.SpotLight( 0xffffff, 0.2 );
-spotLight.position.set(0, 100, 0);
-spotLight.castShadow = true;
-scene.add( spotLight );
-
-var light = new THREE.AmbientLight( 0xcccccc ); // soft white light
-scene.add( light );
-
-// const plight = new THREE.PointLight( 'white', 10, 100 );
-// plight.position.set( 40, 12, 0 );
-// scene.add( light );
+const plight = new THREE.PointLight( 'yellow', 2.5, 40 );
+plight.position.set( 40, 12, 0 );
+scene.add( plight );
 
 // load house
-loader.load( '../objects/house01.glb', function ( gltf ) {
+loader.load( '../objects/house01.glb', 
+function ( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,30,30) // scale here
   directionalLight.target = gltf.scene;
-} )
+}
+)
 
 loader.load('../objects/curtains.glb', function( gltf ) {
   scene.add( gltf.scene );
