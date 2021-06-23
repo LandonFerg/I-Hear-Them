@@ -1,3 +1,10 @@
+var animateRain = true;
+var audioMuted = false;
+var volume = 1;
+
+var playerIdleTime = 4; // how long until player is considered idle
+var currentTime = 0;
+
 var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
 renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
@@ -31,9 +38,8 @@ manager.onLoad = function ( ) {
 
 
 manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-
-	console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-
+	//console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+  document.getElementById("loadingBar").value = (itemsLoaded / itemsTotal) * 100;
 };
 
 manager.onError = function ( url ) {
@@ -48,18 +54,53 @@ const gameHolder = document.getElementById( 'gameHolder' );
 var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
 
 camera.position.y = 10;
+camera.position.x = 10;
+
+// setup audio
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+// create a global audio source
+const ambient = new THREE.Audio( listener );
+
+// TODO: make footstep positional
+const footstepNoise = new THREE.Audio( listener );
+
+const audioLoader = new THREE.AudioLoader();
+
+audioLoader.load( '../game/audio/rain-storm.ogg', function( buffer ) {
+	ambient.setBuffer( buffer );
+	ambient.setLoop( true );
+	ambient.setVolume( 0.3 );
+	//ambient.play(); // play on start
+});
+
+audioLoader.load( '../game/audio/foot-step.ogg', function( buffer ) {
+	footstepNoise.setBuffer( buffer );
+	footstepNoise.setLoop( false );
+	footstepNoise.setVolume( 1 );
+});
 
 
-var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 0.1 );
+var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 0.08 );
 directionalLight.castShadow = true;
 scene.add( directionalLight );
 
-const plight = new THREE.PointLight( 'yellow', 2.5, 40 );
-plight.position.set( 40, 12, 0 );
+const plight = new THREE.PointLight( 'yellow', 0.5, 55 );
+plight.position.set( 32, 12, 0 );
 scene.add( plight );
 
+//Object { x: 52.720575307640296, y: 10, z: -20.562483470411625 }
+
+const candleLight = new THREE.PointLight( 'orange', 2.5, 35 );
+candleLight.position.set( 52.72, 8, -20.56);
+scene.add( candleLight );
+
+// set initial player rotation
+camera.lookAt(candleLight.position);
+
 // load house
-loader.load( '../objects/house01.glb', 
+loader.load( '../objects/house_new.glb', 
 function ( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,30,30) // scale here
@@ -67,7 +108,23 @@ function ( gltf ) {
 }
 )
 
-loader.load('../objects/curtains.glb', function( gltf ) {
+loader.load( '../objects/candle.glb', 
+function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+  gltf.scene.translateY(2);
+}
+)
+
+loader.load( '../objects/table.glb', 
+function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+  gltf.scene.translateY(2);
+}
+)
+
+loader.load('../objects/curtains_new.glb', function( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,30,30) // scale here
   //  gltf.scene.translateX
@@ -91,15 +148,7 @@ var effect = new THREE.ShaderPass( THREE.DitherShader );
 //var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 //seffect.uniforms[ 'scale' ].value = 4;
 effect.renderToScreen = true;
-composer.addPass( effect );
-
-// //pp
-
-//
-// var spotLight = new THREE.SpotLight( 0xffffff );
-// spotLight.position.set(0, 100, 0);
-// spotLight.castShadow = true;
-// scene.add( spotLight );
+composer.addPass( effect ); // enable dither effect
 
 // controls
 var controls = new THREE.PointerLockControls(camera, renderer.domElement ); // control cam
@@ -115,11 +164,13 @@ instructions.addEventListener( 'click', function () {
 controls.addEventListener( 'lock', function () {
 	instructions.style.display = 'none';
   blocker.style.display = 'none';
+  ambient.play();
 } );
 
 controls.addEventListener( 'unlock', function () {
 
   blocker.style.display = 'block';
+  ambient.pause();
   instructions.style.display = '';
   console.log(camera.position);
 } );
@@ -141,7 +192,6 @@ const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
-
 
 
 const onKeyDown = function ( event ) {
@@ -208,6 +258,22 @@ const onKeyUp = function ( event ) {
 document.addEventListener( 'keydown', onKeyDown );
 document.addEventListener( 'keyup', onKeyUp );
 
+$("#muteButton").click(function(){
+  if(!audioMuted)
+  {
+    $("#muteButton").attr("src","../images/mute.png");
+    volume = listener.getMasterVolume();
+    listener.setMasterVolume(0);
+    audioMuted = true;
+  }
+  else
+  {
+    $("#muteButton").attr("src","../images/audio.png");
+    listener.setMasterVolume(volume);
+    audioMuted = false;
+  }
+});
+
 raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
 // ground plane
@@ -222,6 +288,7 @@ scene.add(mesh);
 
 //const ditherMat = new THREE.DitherShader();
 
+/* OMINOUS SPHERE
 const geometry = new THREE.SphereGeometry( 2, 32, 32 );
 const smaterial = new THREE.MeshLambertMaterial( {color: 0x474747, emissive: 0xffffff, emissiveIntensity: 5.0});
 const sphere = new THREE.Mesh( geometry, smaterial );
@@ -230,6 +297,8 @@ sphere.translateX( 20 );
 sphere.translateY( 10 );
 
 scene.add( sphere );
+*/
+
 //scene.position.set(0, 100, 100);
 
 // controls.enableDamping = true;
@@ -262,10 +331,82 @@ function resizeCanvasToDisplaySize() {
   }
 }
 
+function randomNumber(min, max) { 
+    return Math.random() * (max - min) + min;
+} 
+
+// ----------------Environment------------------- //
+
+  let rainGeo;
+  let droplet;
+  let rain;
+  let dropAmount = 1000;
+
+function GenerateRain()
+{
+  rainGeo = new THREE.Geometry();
+  for(let i = 0; i < dropAmount; i++){
+    droplet = new THREE.Vector3(
+      Math.random() * 1000 - 300,
+      Math.random() * 500 - 220,
+      Math.random() * 800 - 850 // -50, -650 ---- -50, -850
+    );
+    droplet.velocity = {};
+    droplet.velocity = 0;
+    droplet.acceleration = 0.24;
+    rainGeo.vertices.push(droplet);
+  }
+
+  let sprite = new THREE.TextureLoader().load('../images/raindrop.png');
+
+  let rainMaterial = new THREE.PointsMaterial({
+    color: 0x555555,
+    size: 0.2,
+    map: sprite
+  });
+
+  //rainMaterial.transparency = true;
+
+  rain = new THREE.Points(rainGeo, rainMaterial);
+  scene.add(rain);
+}
+
+GenerateRain();
+
+function ToggleRain()
+{
+  if(animateRain)
+  { animateRain = false; }
+  else {
+    animateRain = true;
+  }
+}
+
 // add bloom to make glowing objects glow (add bloom pass before dither?)
 animate();
+
+
+// footstep controls
+var stepLength = 4;
+var currentStep = 0;
+
+function CheckFootStep()
+{
+  currentStep += 0.01;
+
+  if(currentStep >= stepLength)
+  {
+    // play sound
+    footstepNoise.play();
+    currentStep = 0;
+
+    console.log("step");
+  }
+}
+
 function animate() {
-	//stats.begin(); // beging stats
+	//stats.begin(); // debug
+  rainGeo.verticesNeedUpdate = true;
 	requestAnimationFrame( animate );
 
   const time = performance.now(); // not sure
@@ -287,15 +428,32 @@ function animate() {
     direction.x = Number( moveRight ) - Number( moveLeft );
     direction.normalize(); // this ensures consistent movements in all directions
 
-    if ( moveForward || moveBackward ) velocity.z -= direction.z * 400.0 * delta;
-    if ( moveLeft || moveRight ) velocity.x -= direction.x * 400.0 * delta;
+    if ( moveForward || moveBackward ) 
+    {
+      velocity.z -= direction.z * 400.0 * delta;
 
-    // if ( onObject === true ) {
-    //
-    //   velocity.y = Math.max( 0, velocity.y );
-    //   canJump = true;
-    //
-    // }
+      CheckFootStep();
+    }
+
+    if ( moveLeft || moveRight ) 
+    {
+      velocity.x -= direction.x * 400.0 * delta;
+
+      CheckFootStep();
+    }
+
+    // check if player is idle
+    if (!moveLeft && !moveRight && !moveForward && !moveBackward)
+    {
+      currentTime += delta * 5;
+
+      if(currentTime >= playerIdleTime)
+      {
+        currentStep = 0; // player idle -- reset step count
+        console.log("reset step count");
+        currentTime = 0;
+      }
+    }
 
     controls.moveRight( - velocity.x * delta );
     controls.moveForward( - velocity.z * delta );
@@ -309,6 +467,22 @@ function animate() {
 
       canJump = true;
 
+    }
+
+    // animate rain
+    if(animateRain){
+      rainGeo.vertices.forEach(d => {
+        var xWind = 20;
+        d.velocity -= randomNumber(d.acceleration * 0.9, d.acceleration);
+        d.y += d.velocity * delta;
+        d.x += xWind * delta;
+
+        if(d.y < -200) {
+          d.y = 500 + (Math.random() * 250); // *80 randomizes height
+          d.x = Math.random() * 600 - 300;
+          d.velocity = 0;
+        }
+      });
     }
 }
 

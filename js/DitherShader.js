@@ -44,6 +44,7 @@ THREE.DitherShader = {
 "               float dither;",
                 "float dither2;",
                 "float dither3;",
+                "float dark_color;",
 
 "                   if (index <= 0) dither = 0.0;",
 "                   if (index == 1) dither = 48.0;",
@@ -111,6 +112,7 @@ THREE.DitherShader = {
               "      if (index >= 63) dither = 21.0;",
 
      				"dither *= (1.0 / 64.0);", // matrix math",
+                    "dark_color = dither + 0.4;",
                     "dither2 = dither + 0.14;", // 2nd highlight threshold (19.2 dither)
                     "dither3 = dither + 0.22;", // main highlight threshold (19.2 dither)
 
@@ -124,6 +126,10 @@ THREE.DitherShader = {
 
               "else if(grey > dither){", // Mid-Tone
               "gl_FragColor = vec4(0.69, 0.04, 0.86, 1.0);}", // Magenta
+
+            //   "else if(grey >= dark_color){",    // undertone
+            //   "gl_FragColor = vec4(0.14, 0.18, 0.4, 1.0);}",
+
             "else{",
               "gl_FragColor = vec4(0.0);}",  // Dark Gray
             //  "gl_FragColor = vec4(0.17,0.25,0.09,1.0);", //Dark Green

@@ -87,3 +87,14 @@ a {
   width: 100%;
   height: 100%;
 }
+
+#muteButton
+{
+    max-width: 2.5vh;
+    max-height: 2.5vh;
+}
+
+.buttonholder {
+    text-align: right;
+    padding-bottom: 50px;
+}
