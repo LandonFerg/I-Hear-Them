@@ -10,34 +10,6 @@ var colliders = [];
 var hitboxes = [];
 const collisionLoader = new THREE.GLTFLoader(boxLoadManager);
 var debugColor = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true } );
-// const collisionLoader = new THREE.GLTFLoader(manager); adds to main loader (makes loading long)
-
-// function PreLoadBoxes()
-// {
-//     if (objectIndex > files.length - 1) {AddCollidersToScene(); return;}
-
-//     collisionLoader.load( files[objectIndex], function ( coll ) {
-//         console.log("added " + files[objectIndex]);
-        
-//         // override material
-//         var currentObj = coll.scene;
-//         //scene.add( coll.scene );
-//         // coll.scene.scale.set(30,30,30); // scale here
-//         // currentObj.traverse((o) => {
-//         // if (o.isMesh) o.material = debugColor;
-//         // });
-//         // coll.scene.translateY(2);
-        
-//         colliders.push(coll.scene);
-//         objectIndex++;
-//         PreLoadBoxes();
-
-//     }, undefined, function ( error ) {
-
-//         console.error( error );
-
-//     } );
-// }
 
 // since loading is async, it's actually faster to just ctrl+c & ctrl+v these lines
 collisionLoader.load(files[0], ObjCallback);
@@ -60,22 +32,13 @@ function ObjCallback(data)
     // add name to obj
     var filename = files[callbackIteration].replace(/^.*[\\\/]/, '');
     data.scene.name = filename;
+	// overwrite default mat
     data.scene.traverse((o) => {
     if (o.isMesh) o.material = debugColor;
     });
 
     colliders.push(data.scene);
     callbackIteration++;
-}
-
-function FindType(object, type)
-{
-    object.children.forEach((child) => {
-        if (child.type === type) {
-            console.log(child);
-        }
-        findType(child, type);
-    });
 }
 
 boxLoadManager.onLoad = function ( ) {
@@ -94,17 +57,3 @@ function GenerateHitboxes()
         console.log(bBox);
     }
 }
-
-// function AddCollidersToScene()
-// {
-//     colliders.forEach(c => {
-//         console.log("added " + c);
-//         scene.add(c);
-//         c.scale.set(30,30,30);
-//         c.traverse((o) => {
-//         if (o.isMesh) o.material = debugColor;
-//         });
-//     });
-//     return;
-// }
-//PreLoadBoxes(); // load collider info

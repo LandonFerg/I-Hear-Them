@@ -74,7 +74,7 @@ playerMesh.geometry.computeBoundingBox();
 var pHitbox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 pHitbox.setFromObject(playerMesh);
 
-// add camera to scene (needed because it is a parent of playerObj)
+// add camera to scene (needed because it is a parent of playerMesh)
 scene.add(camera);
 
 // add our player object as a child
@@ -366,10 +366,11 @@ function GenerateRain()
 {
   rainGeo = new THREE.Geometry();
   for(let i = 0; i < dropAmount; i++){
+		// TODO: Make these numbers make sense
     droplet = new THREE.Vector3(
       Math.random() * 1000 - 300,
       Math.random() * 500 - 220,
-      Math.random() * 800 - 850 // -50, -650 ---- -50, -850
+      Math.random() * 800 - 850
     );
     droplet.velocity = {};
     droplet.velocity = 0;
@@ -402,9 +403,9 @@ function ToggleRain()
   }
 }
 
-// add bloom to make glowing objects glow (add bloom pass before dither?)
-animate();
+// TODO: add bloom to make glowing objects glow (add bloom pass before dither?)
 
+animate();
 
 // footstep controls
 var stepLength = 4;
@@ -419,15 +420,13 @@ function CheckFootStep()
     // play sound
     footstepNoise.play();
     currentStep = 0;
-
-    console.log("step");
   }
 }
 
 var collidingWithSomething = false;
 var debugColorApplied = false;
 
-// TODO: make these collision objects a class with their own mesh variables and booleans for collision collor applied
+// TODO: make these collision objects a class with their own mesh variables and booleans for collision color applied
 // can add methods like onPlayerEnter, onPlayerExit to collision object classes
 // which would certainly help with trigger events later on...
 
@@ -441,7 +440,7 @@ function CalculateCollisions()
     const h = hitboxes[i];
     if(h.intersectsBox(pHitbox))
     {
-      console.log("HIT!!!!!!!!!!!!!!");
+      //console.log("HIT!!!!!!!!!!!!!!");
 			debugColorApplied = true;
 
 			colliders[i].traverse((o) => {
@@ -511,7 +510,7 @@ function animate() {
       if(currentTime >= playerIdleTime)
       {
         currentStep = 0; // player idle -- reset step count
-        console.log("reset step count");
+        //console.log("reset step count");
         currentTime = 0;
       }
     }
@@ -539,7 +538,7 @@ function animate() {
         d.x += xWind * delta;
 
         if(d.y < -200) {
-          d.y = 500 + (Math.random() * 250); // *80 randomizes height
+          d.y = 500 + (Math.random() * 250); // 250 randomizes height
           d.x = Math.random() * 600 - 300;
           d.velocity = 0;
         }
@@ -552,6 +551,4 @@ function animate() {
 	// required if controls.enableDamping or controls.autoRotate are set to true
 	renderer.render( scene, camera );
   composer.render( scene, camera );
-	//composer.render(scene,camera)
-	//stats.end(); // end stats
 }
