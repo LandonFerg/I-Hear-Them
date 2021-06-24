@@ -80,6 +80,9 @@ scene.add(camera);
 // add our player object as a child
 camera.add(playerMesh);
 
+// create player
+let player = new Player(pHitbox, camera);
+
 // create a global audio source
 const ambient = new THREE.Audio( listener );
 
@@ -117,7 +120,7 @@ candleLight.position.set( 52.72, 8, -20.56);
 scene.add( candleLight );
 
 // set initial player rotation
-camera.lookAt(candleLight.position);
+player.camera.lookAt(candleLight.position);
 
 // load house
 loader.load( '../objects/house_new.glb', 
@@ -162,7 +165,7 @@ loader.load('../objects/floor_new.glb', function( gltf ) {
 // // pp
 renderer.autoClear = false; // stops everything idk
 var composer = new THREE.EffectComposer(renderer); // define new composer
-composer.addPass(new THREE.RenderPass( scene, camera ));
+composer.addPass(new THREE.RenderPass( scene, player.camera ));
 
 var effect = new THREE.ShaderPass( THREE.DitherShader );
 //var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
@@ -171,7 +174,7 @@ effect.renderToScreen = true;
 composer.addPass( effect ); // enable dither effect
 
 // controls
-var controls = new THREE.PointerLockControls(camera, renderer.domElement ); // control cam
+var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // control cam
 
 const blocker = document.getElementById( 'menu' ); // menu that blocks on mouse unlocked
 const instructions = document.getElementById( 'instructions' );
@@ -192,7 +195,7 @@ controls.addEventListener( 'unlock', function () {
   blocker.style.display = 'block';
   ambient.pause();
   instructions.style.display = '';
-  console.log(camera.position);
+  console.log(player.camera.position);
 } );
 
 scene.add( controls.getObject() ); //dk waht this does
@@ -208,7 +211,7 @@ let canJump = false;
 let movespeed = 5.0;
 
 let prevTime = performance.now();
-const velocity = new THREE.Vector3();
+const velocity = new THREE.Vector3(); // player velocity
 const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
@@ -275,6 +278,7 @@ const onKeyUp = function ( event ) {
 
 };
 
+// add keyboard event listeners
 document.addEventListener( 'keydown', onKeyDown );
 document.addEventListener( 'keyup', onKeyUp );
 
@@ -344,8 +348,8 @@ function resizeCanvasToDisplaySize() {
   if (canvas.width !== width || canvas.height !== height) {
     // you must pass false here or three.js sadly fights the browser
     renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+    player.camera.aspect = width / height;
+    player.camera.updateProjectionMatrix();
 
     // update any render target sizes here
   }
@@ -424,45 +428,21 @@ function CheckFootStep()
 }
 
 var collidingWithSomething = false;
-var debugColorApplied = false;
 
 // TODO: make these collision objects a class with their own mesh variables and booleans for collision color applied
 // can add methods like onPlayerEnter, onPlayerExit to collision object classes
 // which would certainly help with trigger events later on...
 
 // collider mat for debug
-var collidedDebugMat = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
 
-function CalculateCollisions()
-{
-  for (let i = 0; i < hitboxes.length; i++) 
-  {
-    const h = hitboxes[i];
-    if(h.intersectsBox(pHitbox))
-    {
-      //console.log("HIT!!!!!!!!!!!!!!");
-			debugColorApplied = true;
-
-			colliders[i].traverse((o) => {
-			if (o.isMesh) o.material = collidedDebugMat;
-			});
-    }
-		else
-		{
-			colliders[i].traverse((o) => {
-			if (o.isMesh) o.material = debugColor; // set to default color
-			});
-		}
-  }
-}
 
 function animate() {
   // calculate player hitbox position every frame
-  pHitbox.copy(playerMesh.geometry.boundingBox).applyMatrix4(playerMesh.matrixWorld);
+  player.hitbox.copy(playerMesh.geometry.boundingBox).applyMatrix4(playerMesh.matrixWorld);
 
   if(typeof hitboxes !== 'undefined') // wait for hitboxes to populate
   {
-    CalculateCollisions();  // run collision checks for every other hitbox
+    player.calculateCollisions();  // run collision checks for every other hitbox
   }
 	//stats.begin(); // debug
   rainGeo.verticesNeedUpdate = true;
@@ -470,6 +450,8 @@ function animate() {
 
   const time = performance.now(); // not sure
   resizeCanvasToDisplaySize(); // make sure canvas fits dom
+
+  // check if pointer is locked
   if ( controls.isLocked === true ) { // char controller from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html
 
     raycaster.ray.origin.copy( controls.getObject().position );
@@ -549,6 +531,6 @@ function animate() {
   prevTime = time;
 
 	// required if controls.enableDamping or controls.autoRotate are set to true
-	renderer.render( scene, camera );
-  composer.render( scene, camera );
+	renderer.render( scene, player.camera );
+  composer.render( scene, player.camera );
 }
