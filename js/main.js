@@ -1,7 +1,7 @@
 var animateRain = true;
 var audioMuted = false;
 var volume = 1;
-
+var levelNumber = 1;
 var playerIdleTime = 4; // how long until player is considered idle
 var currentTime = 0;
 
@@ -51,7 +51,7 @@ manager.onError = function ( url ) {
 scene.background = new THREE.Color('rgb(0, 0, 0)');
 
 const gameHolder = document.getElementById( 'gameHolder' );
-var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+var camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 10000 );
 
 camera.position.y = 10;
 camera.position.x = 10;
@@ -59,6 +59,26 @@ camera.position.x = 10;
 // setup audio
 const listener = new THREE.AudioListener();
 camera.add(listener);
+
+// TODO: wrap all this stuff in a setup class so everything isnt global
+
+// player debug material
+var playerDebug = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
+
+// setup player object for collision (TODO: MAKE PLAYER A CLASS)
+var playerMesh = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4),
+playerDebug);
+
+// create player hitbox
+playerMesh.geometry.computeBoundingBox();
+var pHitbox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+pHitbox.setFromObject(playerMesh);
+
+// add camera to scene (needed because it is a parent of playerObj)
+scene.add(camera);
+
+// add our player object as a child
+camera.add(playerMesh);
 
 // create a global audio source
 const ambient = new THREE.Audio( listener );
@@ -108,7 +128,7 @@ function ( gltf ) {
 }
 )
 
-loader.load( '../objects/candle.glb', 
+loader.load( '../objects/candle_fixed.glb', 
 function ( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,30,30) // scale here
@@ -131,7 +151,7 @@ loader.load('../objects/curtains_new.glb', function( gltf ) {
   directionalLight.target = gltf.scene;
 })
 
-loader.load('../objects/floor.glb', function( gltf ) {
+loader.load('../objects/floor_new.glb', function( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,1,30) // scale here
   //  gltf.scene.translateX
@@ -394,7 +414,7 @@ function CheckFootStep()
 {
   currentStep += 0.01;
 
-  if(currentStep >= stepLength)
+  if(currentStep >= stepLength && !footstepNoise.isPlaying)
   {
     // play sound
     footstepNoise.play();
@@ -404,7 +424,47 @@ function CheckFootStep()
   }
 }
 
+var collidingWithSomething = false;
+var debugColorApplied = false;
+
+// TODO: make these collision objects a class with their own mesh variables and booleans for collision collor applied
+// can add methods like onPlayerEnter, onPlayerExit to collision object classes
+// which would certainly help with trigger events later on...
+
+// collider mat for debug
+var collidedDebugMat = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
+
+function CalculateCollisions()
+{
+  for (let i = 0; i < hitboxes.length; i++) 
+  {
+    const h = hitboxes[i];
+    if(h.intersectsBox(pHitbox))
+    {
+      console.log("HIT!!!!!!!!!!!!!!");
+			debugColorApplied = true;
+
+			colliders[i].traverse((o) => {
+			if (o.isMesh) o.material = collidedDebugMat;
+			});
+    }
+		else
+		{
+			colliders[i].traverse((o) => {
+			if (o.isMesh) o.material = debugColor; // set to default color
+			});
+		}
+  }
+}
+
 function animate() {
+  // calculate player hitbox position every frame
+  pHitbox.copy(playerMesh.geometry.boundingBox).applyMatrix4(playerMesh.matrixWorld);
+
+  if(typeof hitboxes !== 'undefined') // wait for hitboxes to populate
+  {
+    CalculateCollisions();  // run collision checks for every other hitbox
+  }
 	//stats.begin(); // debug
   rainGeo.verticesNeedUpdate = true;
 	requestAnimationFrame( animate );
@@ -445,6 +505,7 @@ function animate() {
     // check if player is idle
     if (!moveLeft && !moveRight && !moveForward && !moveBackward)
     {
+      footstepNoise.isPlaying = false;
       currentTime += delta * 5;
 
       if(currentTime >= playerIdleTime)
