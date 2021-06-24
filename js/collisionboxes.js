@@ -11,18 +11,11 @@ var hitboxes = [];
 const collisionLoader = new THREE.GLTFLoader(boxLoadManager);
 var debugColor = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true } );
 
-// since loading is async, it's actually faster to just ctrl+c & ctrl+v these lines
-collisionLoader.load(files[0], ObjCallback);
-collisionLoader.load(files[1], ObjCallback);
-collisionLoader.load(files[2], ObjCallback);
-collisionLoader.load(files[3], ObjCallback);
-collisionLoader.load(files[4], ObjCallback);
-collisionLoader.load(files[5], ObjCallback);
-collisionLoader.load(files[6], ObjCallback);
-collisionLoader.load(files[7], ObjCallback);
-collisionLoader.load(files[8], ObjCallback);
-collisionLoader.load(files[9], ObjCallback);
-collisionLoader.load(files[10], ObjCallback);
+// load our collision objects
+for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    collisionLoader.load(f, ObjCallback);
+}
 
 var callbackIteration = 0;
 function ObjCallback(data)
@@ -46,14 +39,13 @@ boxLoadManager.onLoad = function ( ) {
     GenerateHitboxes();
 };
 
+// create AABBs
 function GenerateHitboxes()
 {
     for (let index = 0; index < colliders.length; index++) {
         const c = colliders[index];
-
         var bBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
         bBox.setFromObject(c);
         hitboxes.push(bBox);
-        console.log(bBox);
     }
 }
