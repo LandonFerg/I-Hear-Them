@@ -65,9 +65,8 @@ camera.add(listener);
 // player debug material
 var playerDebug = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
 
-// setup player object for collision (TODO: MAKE PLAYER A CLASS)
-var playerMesh = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4),
-playerDebug);
+// setup player object for collision
+var playerMesh = new THREE.Mesh(new THREE.BoxGeometry(2, 15, 2));
 
 // create player hitbox
 playerMesh.geometry.computeBoundingBox();
@@ -75,13 +74,13 @@ var pHitbox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 pHitbox.setFromObject(playerMesh);
 
 // add camera to scene (needed because it is a parent of playerMesh)
-scene.add(camera);
+scene.add(playerMesh);
 
-// add our player object as a child
-camera.add(playerMesh);
+// // add our player object as a child
+// camera.add(playerMesh);
 
 // create player
-let player = new Player(pHitbox, camera);
+let player = new Player(pHitbox, camera, false);
 
 // create a global audio source
 const ambient = new THREE.Audio( listener );
@@ -422,6 +421,8 @@ function CheckFootStep()
   if(currentStep >= stepLength && !footstepNoise.isPlaying)
   {
     // play sound
+    // console.log(player.camera.position.clone());
+    // console.log(player.camera.position.clone().add(new THREE.Vector3(velocity.x, 0, velocity.z)));
     footstepNoise.play();
     currentStep = 0;
   }
@@ -437,6 +438,7 @@ var collidingWithSomething = false;
 
 
 function animate() {
+  playerMesh.position.copy(player.camera.position);
   // calculate player hitbox position every frame
   player.hitbox.copy(playerMesh.geometry.boundingBox).applyMatrix4(playerMesh.matrixWorld);
 
@@ -444,6 +446,7 @@ function animate() {
   {
     player.calculateCollisions();  // run collision checks for every other hitbox
   }
+
 	//stats.begin(); // debug
   rainGeo.verticesNeedUpdate = true;
 	requestAnimationFrame( animate );
@@ -497,8 +500,22 @@ function animate() {
       }
     }
 
+    
+    // these update player camera transforms
     controls.moveRight( - velocity.x * delta );
     controls.moveForward( - velocity.z * delta );
+
+    // update player mesh and hitbox transforms
+    playerMesh.position.copy(player.camera.position);
+    player.hitbox.copy(playerMesh.geometry.boundingBox).applyMatrix4(playerMesh.matrixWorld);
+
+    if(player.isColliding)
+    {
+      // move camera back to previous position
+      controls.moveRight( velocity.x * delta );
+      controls.moveForward( velocity.z * delta );
+    }
+    
 
     controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 

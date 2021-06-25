@@ -21,14 +21,15 @@ var callbackIteration = 0;
 function ObjCallback(data)
 {
     scene.add(data.scene);
+    data.scene.visible = false;
     data.scene.scale.set(30,30,30);
     // add name to obj
     var filename = files[callbackIteration].replace(/^.*[\\\/]/, '');
     data.scene.name = filename;
-	// overwrite default mat
-    data.scene.traverse((o) => {
-    if (o.isMesh) o.material = debugColor;
-    });
+	// overwrite default mat (for debug)
+    // data.scene.traverse((o) => {
+    // if (o.isMesh) o.material = debugColor;
+    // });
 
     colliders.push(data.scene);
     callbackIteration++;
