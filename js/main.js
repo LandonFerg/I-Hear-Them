@@ -5,6 +5,8 @@ var levelNumber = 1;
 var playerIdleTime = 4; // how long until player is considered idle
 var currentTime = 0;
 
+// TOOD: make fullscreen button that simply scales the canvas size (same resolution)
+
 var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
 renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
@@ -166,11 +168,16 @@ renderer.autoClear = false; // stops everything idk
 var composer = new THREE.EffectComposer(renderer); // define new composer
 composer.addPass(new THREE.RenderPass( scene, player.camera ));
 
-var effect = new THREE.ShaderPass( THREE.DitherShader );
+var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+//const bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+bloomPass.renderToScreen = true;
+composer.addPass(bloomPass);
+
+var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
 //var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 //seffect.uniforms[ 'scale' ].value = 4;
-effect.renderToScreen = true;
-composer.addPass( effect ); // enable dither effect
+ditherShader.renderToScreen = true;
+composer.addPass( ditherShader ); // enable dither effect
 
 // controls
 var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // control cam
