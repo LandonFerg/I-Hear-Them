@@ -26,6 +26,14 @@ const loader = new THREE.GLTFLoader(manager); // used to load custom models
 
 const loadingScreen = document.getElementById("loading");
 
+// bloom properties
+const bloomProps = {
+  exposure: 1.2,
+  bloomStrength: 2.5,
+  bloomThreshold: 0.6,
+  bloomRadius: 0
+};
+
 manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
 
 	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
@@ -88,6 +96,10 @@ let player = new Player(pHitbox, camera, false);
 const ambient = new THREE.Audio( listener );
 
 // TODO: make footstep positional
+
+// TODO: put all this loading stuff in another js file, and call function like..
+// loadhouse1(); loadhouse2(); so we can have presets
+
 const footstepNoise = new THREE.Audio( listener );
 
 const audioLoader = new THREE.AudioLoader();
@@ -163,7 +175,8 @@ loader.load('../objects/floor_new.glb', function( gltf ) {
   //directionalLight.target = gltf.scene;
 })
 
-// // pp
+/* ------------------------------ Post-Processing ------------------------------ */
+
 renderer.autoClear = false; // stops everything idk
 var composer = new THREE.EffectComposer(renderer); // define new composer
 composer.addPass(new THREE.RenderPass( scene, player.camera ));
@@ -173,11 +186,18 @@ var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth,
 bloomPass.renderToScreen = true;
 composer.addPass(bloomPass);
 
+bloomPass.threshold = bloomProps.bloomThreshold;
+bloomPass.strength = bloomProps.bloomStrength;
+bloomPass.radius = bloomProps.bloomRadius;
+
+
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
 //var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 //seffect.uniforms[ 'scale' ].value = 4;
 ditherShader.renderToScreen = true;
 composer.addPass( ditherShader ); // enable dither effect
+
+
 
 // controls
 var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // control cam
@@ -318,7 +338,7 @@ scene.add(mesh);
 
 //const ditherMat = new THREE.DitherShader();
 
-/* OMINOUS SPHERE
+// OMINOUS SPHERE
 const geometry = new THREE.SphereGeometry( 2, 32, 32 );
 const smaterial = new THREE.MeshLambertMaterial( {color: 0x474747, emissive: 0xffffff, emissiveIntensity: 5.0});
 const sphere = new THREE.Mesh( geometry, smaterial );
@@ -327,7 +347,7 @@ sphere.translateX( 20 );
 sphere.translateY( 10 );
 
 scene.add( sphere );
-*/
+
 
 //scene.position.set(0, 100, 100);
 

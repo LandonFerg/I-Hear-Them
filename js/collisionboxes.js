@@ -7,7 +7,7 @@ var files = ['../objects/wall01.glb','../objects/wall01.glb',
 '../objects/wall05.glb','../objects/wall06.glb','../objects/wall07.glb',
 '../objects/wall08.glb','../objects/wall09.glb','../objects/table_collider.glb'];
 
-const wireframeDebug = true;
+const wireframeDebug = false;
 const boxLoadManager = new THREE.LoadingManager();
 var colliders = [];
 var hitboxes = [];

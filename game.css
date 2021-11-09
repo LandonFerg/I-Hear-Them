@@ -84,14 +84,20 @@ a {
   max-width: 900px;
   max-height: 506px;
 
-  width: 100%;
-  height: 100%;
+  width: 900px;
+  height: 506px;
 }
 
 #muteButton
 {
     max-width: 2.5vh;
     max-height: 2.5vh;
+}
+
+#fsButton {
+  padding-left: 2%;
+  max-width: 2.5vh;
+  max-height: 2.5vh;
 }
 
 .buttonholder {

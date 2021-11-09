@@ -106,6 +106,7 @@
 
       <div class="buttonholder">
         <input id="muteButton" type="image" src="../images/audio.png" />
+        <input id="fsButton" type="image" src="../images/fs.png" />
       </div>
       <div id = "loading">
         <div style="width:200px;">
@@ -114,19 +115,22 @@
         </div>
       </div>
 
-      <div id="menu">
-        <div id ="instructions">
-          <h1 style="color: white;">CLICK TO FOCUS</h1>
+    <div id="holder">
+        <div id="menu">
+          <div id ="instructions">
+            <h1 style="color: white;">CLICK TO FOCUS</h1>
+          </div>
         </div>
-      </div>
 
-    <canvas id="gameCanvas" style="background-color: white;"></canvas>
+      <canvas id="gameCanvas" style="background-color: white;"></canvas>
+    </div>
     <div class="textholder">
       <a href="#" style = "visibility: hidden;">Begin</a>
     </div>
 
   </div>
   <script src="../js/playercontroller.js"></script>
+    <script src="../js/fullscreen.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/collisionboxes.js"></script>
 </body>
