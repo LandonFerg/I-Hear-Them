@@ -8,6 +8,8 @@ var currentTime = 0;
 // TOOD: make fullscreen button that simply scales the canvas size (same resolution)
 
 var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
 // If texture is used for color information, set colorspace.  
@@ -126,31 +128,57 @@ const plight = new THREE.PointLight( 'yellow', 0.5, 55 );
 plight.position.set( 32, 12, 0 );
 scene.add( plight );
 
+const kitchen_plight = new THREE.PointLight( 'white', 5, 45 );
+kitchen_plight.position.set( 112, 7, 0 );
+kitchen_plight.shadow.mapSize.width = 1024; // default
+kitchen_plight.shadow.mapSize.height = 1024; // default
+scene.add( kitchen_plight );
+
 //Object { x: 52.720575307640296, y: 10, z: -20.562483470411625 }
 
 const candleLight = new THREE.PointLight( 'orange', 2.5, 35 );
 candleLight.position.set( 52.72, 8, -20.56);
+candleLight.shadow.mapSize.width = 1024; // default
+candleLight.shadow.mapSize.height = 1024; // default
 scene.add( candleLight );
 
 // set initial player rotation
 player.camera.lookAt(candleLight.position);
 
 // load house
-loader.load( '../objects/house_new.glb', 
+loader.load( '../objects/house_v2.glb', 
 function ( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,30,30) // scale here
   directionalLight.target = gltf.scene;
-}
-)
+})
+
+loader.load( '../objects/kitchen.glb', 
+function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+})
+
+loader.load( '../objects/kitchen_roof.glb', 
+function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+})
 
 loader.load( '../objects/candle_fixed.glb', 
 function ( gltf ) {
   scene.add( gltf.scene );
   gltf.scene.scale.set(30,30,30) // scale here
   gltf.scene.translateY(2);
-}
-)
+})
+
+loader.load('../objects/baseboard-1.glb', function( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+  gltf.scene.translateY(2);
+  //  gltf.scene.translateX
+  directionalLight.target = gltf.scene;
+})
 
 loader.load( '../objects/table.glb', 
 function ( gltf ) {
@@ -200,7 +228,7 @@ composer.addPass( ditherShader ); // enable dither effect
 
 
 // controls
-var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // control cam
+var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // contr  ol cam
 
 const blocker = document.getElementById( 'menu' ); // menu that blocks on mouse unlocked
 const instructions = document.getElementById( 'instructions' );
