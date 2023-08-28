@@ -38,6 +38,7 @@ THREE.PointerLockControls = function ( camera, domElement ) {
 		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
 		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
+		// fix camera rotation
 		scope.range = 200;
 		if (movementX > scope.range || movementX < -scope.range) return;
 

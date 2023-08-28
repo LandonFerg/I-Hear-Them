@@ -85,6 +85,7 @@ playerMesh.geometry.computeBoundingBox();
 var pHitbox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 pHitbox.setFromObject(playerMesh);
 
+
 // add camera to scene (needed because it is a parent of playerMesh)
 scene.add(playerMesh);
 
@@ -145,6 +146,14 @@ scene.add( candleLight );
 // set initial player rotation
 player.camera.lookAt(candleLight.position);
 
+
+// outlinePass hates empty arrays so lets make an object it can always use
+const g = new THREE.BoxGeometry( 1, 1, 1 ); 
+const placeholder = new THREE.Mesh(g); 
+scene.add(placeholder);
+placeholder.position.set( 3000, 3000, 20);
+
+
 // load house
 loader.load( '../objects/house_v2.glb', 
 function ( gltf ) {
@@ -165,11 +174,22 @@ function ( gltf ) {
   gltf.scene.scale.set(30,30,30) // scale here
 })
 
+var microwave;
+
 loader.load( '../objects/microwave.glb', 
 function ( gltf ) {
-  scene.add( gltf.scene );
+  microwave = gltf.scene;
+  scene.add( microwave );
   gltf.scene.scale.set(30,30,30) // scale here
+
+  initMicrowave();
 })
+
+// Outliner needs an array so we give it an object on init
+function initMicrowave()
+{
+  selectedObjects.push(microwave);
+}
 
 loader.load( '../objects/kitchen_roof.glb', 
 function ( gltf ) {
@@ -221,6 +241,17 @@ renderer.autoClear = false; // stops everything idk
 var composer = new THREE.EffectComposer(renderer); // define new composer
 composer.addPass(new THREE.RenderPass( scene, player.camera ));
 
+var selectedObjects = [];
+
+var outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, player.camera, selectedObjects);
+outlinePass.renderToScreen = true;
+outlinePass.edgeThickness = 1;
+//outlinePass.edgeStrength = 6;
+//selectedObjects.push(microwave);
+// outlinePass.visibleEdgeColor = 0xffffff;
+// outlinePass.hiddenEdgeColor = 0xffffff;
+composer.addPass( outlinePass );
+
 var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
 //const bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
 bloomPass.renderToScreen = true;
@@ -229,7 +260,6 @@ composer.addPass(bloomPass);
 bloomPass.threshold = bloomProps.bloomThreshold;
 bloomPass.strength = bloomProps.bloomStrength;
 bloomPass.radius = bloomProps.bloomRadius;
-
 
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
 //var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
@@ -364,7 +394,9 @@ $("#muteButton").click(function(){
   }
 });
 
-raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
+raycaster = new THREE.Raycaster();
+raycaster.setFromCamera( new THREE.Vector2(), player.camera )
+//raycaster.set( player.camera.getWorldPosition(), player.camera.getWorldDirection() );
 
 // ground plane
 
@@ -506,10 +538,30 @@ var collidingWithSomething = false;
 
 function animate() {
 
-  if(currentTime % 24 == 0)
+  // if(currentTime % 24 == 0)
+  // {
+  //   console.log(player.camera.rotation);
+  //   //onmousemove = e => console.log( e.clientX )
+  // }
+
+  raycaster.setFromCamera( new THREE.Vector2(), player.camera );
+  var intersects = raycaster.intersectObjects([scene], true);
+
+  // outline objects
+  if(intersects.length > 0)
   {
-    console.log(player.camera.rotation);
-    //onmousemove = e => console.log( e.clientX )
+    var object = intersects[0].object;
+    //console.log(object.name); //debug obj names
+
+    if(object.name == "microwave")
+    {
+      outlinePass.selectedObjects = [object];
+    }
+
+    else
+    {
+      outlinePass.selectedObjects = [placeholder];
+    }
   }
 
   playerMesh.position.copy(player.camera.position);
@@ -530,9 +582,6 @@ function animate() {
 
   // check if pointer is locked
   if ( controls.isLocked === true ) { // char controller from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html
-
-    raycaster.ray.origin.copy( controls.getObject().position );
-    raycaster.ray.origin.y -= 10;
 
     const delta = ( time - prevTime ) / 1000;
 
