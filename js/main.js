@@ -159,6 +159,18 @@ function ( gltf ) {
   gltf.scene.scale.set(30,30,30) // scale here
 })
 
+loader.load( '../objects/cuppboards.glb', 
+function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+})
+
+loader.load( '../objects/microwave.glb', 
+function ( gltf ) {
+  scene.add( gltf.scene );
+  gltf.scene.scale.set(30,30,30) // scale here
+})
+
 loader.load( '../objects/kitchen_roof.glb', 
 function ( gltf ) {
   scene.add( gltf.scene );
@@ -466,7 +478,7 @@ function ToggleRain()
 animate();
 
 // footstep controls
-var stepLength = 4;
+var stepLength = 3;
 var currentStep = 0;
 
 function CheckFootStep()
@@ -493,6 +505,13 @@ var collidingWithSomething = false;
 
 
 function animate() {
+
+  if(currentTime % 24 == 0)
+  {
+    console.log(player.camera.rotation);
+    //onmousemove = e => console.log( e.clientX )
+  }
+
   playerMesh.position.copy(player.camera.position);
   // calculate player hitbox position every frame
   player.hitbox.copy(playerMesh.geometry.boundingBox).applyMatrix4(playerMesh.matrixWorld);
