@@ -125,7 +125,7 @@ THREE.DitherShader = {
               "gl_FragColor = vec4(1, 0.46, 0.15, 1.0);}", // bright orange
 
               "else if(grey > dither){", // Mid-Tone
-              "gl_FragColor = vec4(0.69, 0.04, 0.86, 1.0);}", // Magenta //red "gl_FragColor = vec4(0.99, 0.04, 0, 1.0);}",
+              "gl_FragColor = vec4(0.1, 0.98, 0.1, 1.0);}", // Magenta //red "gl_FragColor = vec4(0.99, 0.04, 0, 1.0);}",
 
             //   "else if(grey >= dark_color){",    // undertone
             //   "gl_FragColor = vec4(0.14, 0.18, 0.4, 1.0);}",

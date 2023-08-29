@@ -95,6 +95,8 @@ scene.add(playerMesh);
 // create player
 let player = new Player(pHitbox, camera, false);
 
+scene.add(player.camera);
+
 // create a global audio source
 const ambient = new THREE.Audio( listener );
 
@@ -191,6 +193,13 @@ function initMicrowave()
   selectedObjects.push(microwave);
 }
 
+loader.load( '../objects/ramen.glb', 
+function ( gltf ) {
+  microwave = gltf.scene;
+  scene.add( microwave );
+  gltf.scene.scale.set(30,30,30) // scale here
+})
+
 loader.load( '../objects/kitchen_roof.glb', 
 function ( gltf ) {
   scene.add( gltf.scene );
@@ -245,7 +254,7 @@ var selectedObjects = [];
 
 var outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, player.camera, selectedObjects);
 outlinePass.renderToScreen = true;
-outlinePass.edgeThickness = 1;
+outlinePass.edgeThickness = 2;
 //outlinePass.edgeStrength = 6;
 //selectedObjects.push(microwave);
 // outlinePass.visibleEdgeColor = 0xffffff;
@@ -302,6 +311,7 @@ let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
+let interact = false;
 let canJump = false;
 
 let movespeed = 5.0;
@@ -341,6 +351,11 @@ const onKeyDown = function ( event ) {
       // if ( canJump === true ) velocity.y += 150; // disabled jump for now
       canJump = false;
       break;
+    
+    case 'KeyE':
+      interact = true;
+      console.log("interact test");
+      break;
 
   }
 
@@ -368,6 +383,11 @@ const onKeyUp = function ( event ) {
     case 'ArrowRight':
     case 'KeyD':
       moveRight = false;
+      break;
+
+    case 'KeyE':
+      interact = false;
+      console.log("interact test");
       break;
 
   }
@@ -535,6 +555,26 @@ var collidingWithSomething = false;
 
 // collider mat for debug
 
+function pickupObject(o)
+{
+  player.camera.add(o);
+  //o.position = player.camera.position;
+  o.updateMatrix(true);
+  o.frustumCulled = false;
+  //scene.getObjectByName( "Ramen" ).position.set(0.5,-0.3,-1);
+  o.position.set(2.2,-1,-4);
+  o.scale.set(30,30,30);
+
+  // moves object to front but messes up normals
+  //o.material.depthTest = false;
+  //o.material.depthWrite = false;
+
+  o.updateMatrix(true);
+  // var direction = new THREE.Vector3();
+  // var distance = 1;
+  // player.camera.getWorldDirection(direction);
+  // o.position.add(direction.multiplyScalar(distance));
+}
 
 function animate() {
 
@@ -556,6 +596,15 @@ function animate() {
     if(object.name == "microwave")
     {
       outlinePass.selectedObjects = [object];
+    }
+
+    else if (object.name == "Ramen")
+    {
+      outlinePass.selectedObjects = [object];
+      if(interact == true)
+      {
+        pickupObject(object)
+      }
     }
 
     else
