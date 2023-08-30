@@ -176,21 +176,12 @@ function ( gltf ) {
   gltf.scene.scale.set(30,30,30) // scale here
 })
 
-var microwave;
-
-loader.load( '../objects/microwave.glb', 
-function ( gltf ) {
-  microwave = gltf.scene;
-  scene.add( microwave );
-  gltf.scene.scale.set(30,30,30) // scale here
-
-  initMicrowave();
-})
+var microwave = new Microwave(scene);
 
 // Outliner needs an array so we give it an object on init
 function initMicrowave()
 {
-  selectedObjects.push(microwave);
+  selectedObjects.push(microwave.microwave);
 }
 
 var ramen;
@@ -199,6 +190,20 @@ function ( gltf ) {
   ramen = gltf.scene;
   scene.add( ramen );
   gltf.scene.scale.set(30,30,30) // scale here
+})
+
+var doggie;
+loader.load( '../objects/doggie.glb', 
+function ( gltf ) {
+  doggie = gltf.scene;
+  mixer = new THREE.AnimationMixer(doggie);
+  var action = mixer.clipAction(gltf.animations[0]);
+  action.play();
+  scene.add( doggie );
+  gltf.scene.scale.set(30,30,30) // scale here
+  
+  doggie.visible = false;
+  dogInit();
 })
 
 loader.load( '../objects/kitchen_roof.glb', 
@@ -556,10 +561,14 @@ var collidingWithSomething = false;
 
 // collider mat for debug
 
+function dogInit()
+{
+  // threejs doesnt support blender emission materials > 1
+  // so this adjusts the dog's eyes emission
+}
 function pickupObject(o)
 {
   player.camera.add(o);
-  //o.position = player.camera.position;
   o.updateMatrix(true);
   o.frustumCulled = false;
   //scene.getObjectByName( "Ramen" ).position.set(0.5,-0.3,-1);
@@ -575,11 +584,44 @@ function pickupObject(o)
   //o.material.depthWrite = false;
 
   o.updateMatrix(true);
+
+  // testing material adjustment
+  doggie.visible = true;
+  doggie.traverse((o) => {
+    var i = 0;
+    if (o.isMesh) 
+    {
+      console.log(o.material);
+      if(o.material.name == "wolfEyes")
+      {
+        o.material.emissiveIntensity = 1000.0;
+      }
+      console.log(o.material);
+      i++;
+    }
+  });
+
+  kitchen_plight.visible = false;
   // var direction = new THREE.Vector3();
   // var distance = 1;
   // player.camera.getWorldDirection(direction);
   // o.position.add(direction.multiplyScalar(distance));
 }
+
+function dropObject(o)
+{
+  o.visible = false;
+  scene.getObjectByName( "Ramen" ).visible = false;
+  o.renderOrder = 0;
+  o.updateMatrix(true);
+  o.onBeforeRender = function( renderer ) {};
+  kitchen_plight.visible = true;
+  doggie.visible = false;
+}
+
+var hasFood = false;
+var microwaveActive = false;
+var currentObject; // current obj being held
 
 function animate() {
 
@@ -596,11 +638,19 @@ function animate() {
   if(intersects.length > 0)
   {
     var object = intersects[0].object;
-    //console.log(object.name); //debug obj names
+    console.log(object.name); //debug obj names
 
-    if(object.name == "microwave")
+    if(object.name == "microwave" || object.name == "microwave001")
     {
-      outlinePass.selectedObjects = [object];
+      if(hasFood == true)
+      {
+        outlinePass.selectedObjects = [scene.getObjectByName("microwave")];
+        if(interact == true && hasFood == true)
+        {
+          dropObject(currentObject);
+          hasFood = false;
+        }
+      }
     }
 
     else if (object.name == "Ramen")
@@ -608,6 +658,8 @@ function animate() {
       outlinePass.selectedObjects = [object];
       if(interact == true)
       {
+        hasFood = true;
+        currentObject = object;
         pickupObject(object)
       }
     }
@@ -638,6 +690,7 @@ function animate() {
   if ( controls.isLocked === true ) { // char controller from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html
 
     const delta = ( time - prevTime ) / 1000;
+    if ( mixer ) mixer.update( delta ); // update animations
 
     // movespeeds (higher is slower)
     velocity.x -= velocity.x * 45.0 * delta;
