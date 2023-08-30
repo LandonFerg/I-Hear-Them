@@ -193,10 +193,11 @@ function initMicrowave()
   selectedObjects.push(microwave);
 }
 
+var ramen;
 loader.load( '../objects/ramen.glb', 
 function ( gltf ) {
-  microwave = gltf.scene;
-  scene.add( microwave );
+  ramen = gltf.scene;
+  scene.add( ramen );
   gltf.scene.scale.set(30,30,30) // scale here
 })
 
@@ -564,6 +565,10 @@ function pickupObject(o)
   //scene.getObjectByName( "Ramen" ).position.set(0.5,-0.3,-1);
   o.position.set(2.2,-1,-4);
   o.scale.set(30,30,30);
+
+  // move object to front
+  o.renderOrder = 999;
+  o.onBeforeRender = function( renderer ) { renderer.clearDepth(); };
 
   // moves object to front but messes up normals
   //o.material.depthTest = false;
