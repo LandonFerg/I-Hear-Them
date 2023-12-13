@@ -11,9 +11,6 @@ THREE.DitherShader = {
     uniforms: {
         "tDiffuse": { value: null },
         "amount":   { value: 1.0 },
-        "mainR" : { value: 0.69 },                    //0.69, 0.04, 0.86
-        "mainG" : { value: 0.04},
-        "mainB" : { value: 0.86 }
     },
     vertexShader: [
         "varying vec2 vUv;",
@@ -25,9 +22,6 @@ THREE.DitherShader = {
     fragmentShader: [
         "uniform sampler2D tDiffuse;",
         "uniform float amount;",
-        "uniform float mainR;",
-        "uniform float mainG;",
-        "uniform float mainB;",
         "varying vec2 vUv;",
 
         // Simple noise function
@@ -130,7 +124,7 @@ THREE.DitherShader = {
 
                     // Use noise to alter the dither threshold
                     "float n = noise(vUv * fragPos.xy);",
-                    "dither += n * 0.01;",
+                    "dither += n * 0.02;",
 
                     "dark_color = dither + 0.4;",
                     "dither2 = dither + 0.14;", // 2nd highlight threshold (19.2 dither)
@@ -141,11 +135,11 @@ THREE.DitherShader = {
               //"gl_FragColor = vec4(0.8);", // White
               "gl_FragColor = vec4(1);}",
               
-              "else if(grey > dither2){", // Secondary highlight
-              "gl_FragColor = vec4(1, 0.46, 0.15, 1.0);}", // bright orange
+              //"else if(grey > dither2){", // Secondary highlight
+              //"gl_FragColor = vec4(1, 0.46, 0.15, 1.0);}", // bright orange
 
               "else if(grey > dither){", // Mid-Tone
-              "gl_FragColor = vec4(mainR, mainG, mainB, 1.0);}", // Magenta //red "gl_FragColor = vec4(0.99, 0.04, 0, 1.0);}",
+              "gl_FragColor = vec4(0.69, 0.04, 0.86, 1.0);}", // Magenta //red "gl_FragColor = vec4(0.99, 0.04, 0, 1.0);}",
 
             //   "else if(grey >= dark_color){",    // undertone
             //   "gl_FragColor = vec4(0.14, 0.18, 0.4, 1.0);}",
@@ -154,7 +148,7 @@ THREE.DitherShader = {
               "gl_FragColor = vec4(0.0);}",  // Dark Gray
             //  "gl_FragColor = vec4(0.17,0.25,0.09,1.0);", //Dark Green
               //"gl_FragColor = vec4(0.09,0.15,0.32,1.0);", //Dark Blue
-        "}", "else{ gl_FragColor = texture2D(tDiffuse, vUv); }",
+        "}",
         "}"
     ].join( "\n" )
 
