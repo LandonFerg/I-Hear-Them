@@ -37,17 +37,13 @@ const bloomProps = {
 };
 
 manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
-
 	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-
 };
 
 manager.onLoad = function ( ) {
-
 	console.log( 'Loading complete!');
   loadingScreen.style.display = "none";
 };
-
 
 manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
 	//console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
@@ -55,11 +51,31 @@ manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
 };
 
 manager.onError = function ( url ) {
-
 	console.log( 'There was an error loading ' + url );
-
 };
 
+// Lights
+var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 0.08 );
+directionalLight.castShadow = true;
+scene.add( directionalLight );
+
+const plight = new THREE.PointLight( 'yellow', 0.5, 55 );
+plight.position.set( 32, 12, 0 );
+scene.add( plight );
+
+const kitchen_plight = new THREE.PointLight( 'white', 5, 45 );
+kitchen_plight.position.set( 112, 7, 0 );
+kitchen_plight.shadow.mapSize.width = 1024; // default
+kitchen_plight.shadow.mapSize.height = 1024; // default
+scene.add( kitchen_plight );
+
+//Object { x: 52.720575307640296, y: 10, z: -20.562483470411625 }
+
+const candleLight = new THREE.PointLight( 'orange', 2.5, 35 );
+candleLight.position.set( 52.72, 8, -20.56);
+candleLight.shadow.mapSize.width = 1024; // default
+candleLight.shadow.mapSize.height = 1024; // default
+scene.add( candleLight );
 scene.background = new THREE.Color('rgb(0, 0, 0)');
 
 const gameHolder = document.getElementById( 'gameHolder' );
@@ -102,9 +118,6 @@ const ambient = new THREE.Audio( listener );
 
 // TODO: make footstep positional
 
-// TODO: put all this loading stuff in another js file, and call function like..
-// loadhouse1(); loadhouse2(); so we can have presets
-
 const footstepNoise = new THREE.Audio( listener );
 
 const audioLoader = new THREE.AudioLoader();
@@ -122,32 +135,8 @@ audioLoader.load( '../game/audio/foot-step.ogg', function( buffer ) {
 	footstepNoise.setVolume( 1 );
 });
 
-
-var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 0.08 );
-directionalLight.castShadow = true;
-scene.add( directionalLight );
-
-const plight = new THREE.PointLight( 'yellow', 0.5, 55 );
-plight.position.set( 32, 12, 0 );
-scene.add( plight );
-
-const kitchen_plight = new THREE.PointLight( 'white', 5, 45 );
-kitchen_plight.position.set( 112, 7, 0 );
-kitchen_plight.shadow.mapSize.width = 1024; // default
-kitchen_plight.shadow.mapSize.height = 1024; // default
-scene.add( kitchen_plight );
-
-//Object { x: 52.720575307640296, y: 10, z: -20.562483470411625 }
-
-const candleLight = new THREE.PointLight( 'orange', 2.5, 35 );
-candleLight.position.set( 52.72, 8, -20.56);
-candleLight.shadow.mapSize.width = 1024; // default
-candleLight.shadow.mapSize.height = 1024; // default
-scene.add( candleLight );
-
 // set initial player rotation
 player.camera.lookAt(candleLight.position);
-
 
 // outlinePass hates empty arrays so lets make an object it can always use
 const g = new THREE.BoxGeometry( 1, 1, 1 ); 
@@ -155,35 +144,14 @@ const placeholder = new THREE.Mesh(g);
 scene.add(placeholder);
 placeholder.position.set( 3000, 3000, 20);
 
-
-// load house
-loader.load( '../objects/house_v2.glb', 
-function ( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-  directionalLight.target = gltf.scene;
-})
-
-loader.load( '../objects/kitchen.glb', 
-function ( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-})
-
-loader.load( '../objects/cuppboards.glb', 
-function ( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-})
-
 var microwave = new Microwave(scene);
-
 // Outliner needs an array so we give it an object on init
 function initMicrowave()
 {
   selectedObjects.push(microwave.microwave);
 }
 
+// Loading dynamic objects
 var ramen;
 loader.load( '../objects/ramen.glb', 
 function ( gltf ) {
@@ -206,49 +174,8 @@ function ( gltf ) {
   dogInit();
 })
 
-loader.load( '../objects/kitchen_roof.glb', 
-function ( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-})
-
-loader.load( '../objects/candle_fixed.glb', 
-function ( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-  gltf.scene.translateY(2);
-})
-
-loader.load('../objects/baseboard-1.glb', function( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-  gltf.scene.translateY(2);
-  //  gltf.scene.translateX
-  directionalLight.target = gltf.scene;
-})
-
-loader.load( '../objects/table.glb', 
-function ( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-  gltf.scene.translateY(2);
-}
-)
-
-loader.load('../objects/curtains_new.glb', function( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,30,30) // scale here
-  //  gltf.scene.translateX
-  directionalLight.target = gltf.scene;
-})
-
-loader.load('../objects/floor_new.glb', function( gltf ) {
-  scene.add( gltf.scene );
-  gltf.scene.scale.set(30,1,30) // scale here
-  //  gltf.scene.translateX
-  gltf.scene.translateY(0.1);
-  //directionalLight.target = gltf.scene;
-})
+// Load house
+LoadHouse();
 
 /* ------------------------------ Post-Processing ------------------------------ */
 
@@ -260,14 +187,15 @@ var selectedObjects = [];
 
 var outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, player.camera, selectedObjects);
 outlinePass.edgeThickness = 2;
+// Optional properties...
 //outlinePass.edgeStrength = 6;
 //selectedObjects.push(microwave);
 // outlinePass.visibleEdgeColor = 0xffffff;
 // outlinePass.hiddenEdgeColor = 0xffffff;
+
 composer.addPass( outlinePass );
 
 var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-//const bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
 composer.addPass(bloomPass);
 
 bloomPass.threshold = bloomProps.bloomThreshold;
@@ -275,11 +203,7 @@ bloomPass.strength = bloomProps.bloomStrength;
 bloomPass.radius = bloomProps.bloomRadius;
 
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
-//var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
-//seffect.uniforms[ 'scale' ].value = 4;
 composer.addPass( ditherShader ); // enable dither effect
-
-
 
 // controls
 var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // contr  ol cam
@@ -326,81 +250,6 @@ const vertex = new THREE.Vector3();
 const color = new THREE.Color();
 
 
-const onKeyDown = function ( event ) {
-
-  switch ( event.code ) {
-
-    case 'ArrowUp':
-    case 'KeyW':
-      moveForward = true;
-      break;
-
-    case 'ArrowLeft':
-    case 'KeyA':
-      moveLeft = true;
-      break;
-
-    case 'ArrowDown':
-    case 'KeyS':
-      moveBackward = true;
-      break;
-
-    case 'ArrowRight':
-    case 'KeyD':
-      moveRight = true;
-      break;
-
-    case 'Space':
-      // if ( canJump === true ) velocity.y += 150; // disabled jump for now
-      canJump = false;
-      break;
-    
-    case 'KeyE':
-      interact = true;
-      console.log("interact test");
-      break;
-
-  }
-
-};
-
-const onKeyUp = function ( event ) {
-
-  switch ( event.code ) {
-
-    case 'ArrowUp':
-    case 'KeyW':
-      moveForward = false;
-      break;
-
-    case 'ArrowLeft':
-    case 'KeyA':
-      moveLeft = false;
-      break;
-
-    case 'ArrowDown':
-    case 'KeyS':
-      moveBackward = false;
-      break;
-
-    case 'ArrowRight':
-    case 'KeyD':
-      moveRight = false;
-      break;
-
-    case 'KeyE':
-      interact = false;
-      console.log("interact test");
-      break;
-
-  }
-
-};
-
-// add keyboard event listeners
-document.addEventListener( 'keydown', onKeyDown );
-document.addEventListener( 'keyup', onKeyUp );
-
 $("#muteButton").click(function(){
   if(!audioMuted)
   {
@@ -422,7 +271,6 @@ raycaster.setFromCamera( new THREE.Vector2(), player.camera )
 //raycaster.set( player.camera.getWorldPosition(), player.camera.getWorldDirection() );
 
 // ground plane
-
 let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
 floorGeometry.rotateX( - Math.PI / 2 );
 const material = new THREE.MeshLambertMaterial( {color: 0x1c1c1c, side:
@@ -605,9 +453,10 @@ function pickupObject(o)
   // o.position.add(direction.multiplyScalar(distance));
 
  //ditherShader.uniforms.amount.value = 0;
- ditherShader.uniforms.mainR.value = 0.8;
- ditherShader.uniforms.mainG.value = 0;
- ditherShader.uniforms.mainB.value = 0;
+//  ditherShader.uniforms.mainR.value = 0.8;
+//  ditherShader.uniforms.mainG.value = 0;
+//  ditherShader.uniforms.mainB.value = 0;
+  SetDitherColor(0.8, 0, 0);
 }
 
 function dropObject(o)
@@ -619,6 +468,8 @@ function dropObject(o)
   o.onBeforeRender = function( renderer ) {};
   kitchen_plight.visible = true;
   doggie.visible = false;
+
+  SetDitherColor(0.69, 0.04, 0.86);
 }
 
 var hasFood = false;
@@ -747,7 +598,6 @@ function animate() {
       controls.moveForward( velocity.z * delta );
     }
     
-
     controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
     if ( controls.getObject().position.y < 10 ) {
