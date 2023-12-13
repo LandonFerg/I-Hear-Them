@@ -259,7 +259,6 @@ composer.addPass(new THREE.RenderPass( scene, player.camera ));
 var selectedObjects = [];
 
 var outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, player.camera, selectedObjects);
-//outlinePass.renderToScreen = true;
 outlinePass.edgeThickness = 2;
 //outlinePass.edgeStrength = 6;
 //selectedObjects.push(microwave);
@@ -269,7 +268,6 @@ composer.addPass( outlinePass );
 
 var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
 //const bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-//bloomPass.renderToScreen = true;
 composer.addPass(bloomPass);
 
 bloomPass.threshold = bloomProps.bloomThreshold;
@@ -279,7 +277,6 @@ bloomPass.radius = bloomProps.bloomRadius;
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
 //var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 //seffect.uniforms[ 'scale' ].value = 4;
-//ditherShader.renderToScreen = true;
 composer.addPass( ditherShader ); // enable dither effect
 
 
@@ -606,7 +603,6 @@ function pickupObject(o)
   // var distance = 1;
   // player.camera.getWorldDirection(direction);
   // o.position.add(direction.multiplyScalar(distance));
- //ditherShader.renderToScreen = false;
 
  //ditherShader.uniforms.amount.value = 0;
  ditherShader.uniforms.mainR.value = 0.8;
@@ -630,7 +626,6 @@ var microwaveActive = false;
 var currentObject; // current obj being held
 
 function animate() {
-  //ditherShader.renderToScreen = false;
   // if(currentTime % 24 == 0)
   // {
   //   console.log(player.camera.rotation);s
