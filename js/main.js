@@ -202,7 +202,16 @@ bloomPass.threshold = bloomProps.bloomThreshold;
 bloomPass.strength = bloomProps.bloomStrength;
 bloomPass.radius = bloomProps.bloomRadius;
 
+// look up the size the canvas is being displayed
+
+// TODO: Figure out why I cant render vignette over dithershader without resolution looking weird
+var canvas = renderer.domElement;
+
+var vignetteShader = new THREE.ShaderPass( THREE.VignetteShader );
+composer.addPass( vignetteShader ); // enable dither effect
+
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
+ditherShader.uniforms.ditherResolution.value.set(canvas.clientWidth * 2, canvas.clientHeight * 2);
 composer.addPass( ditherShader ); // enable dither effect
 
 // controls
@@ -322,6 +331,9 @@ function resizeCanvasToDisplaySize() {
 
     // update any render target sizes here
   }
+
+  //vignetteShader.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+  //ditherShader.uniforms.resolution.value.set(canvas.width, canvas.height);
 }
 
 function randomNumber(min, max) { 
@@ -411,6 +423,8 @@ function dogInit()
   // threejs doesnt support blender emission materials > 1
   // so this adjusts the dog's eyes emission
 }
+
+var holdingObject = false;
 function pickupObject(o)
 {
   player.camera.add(o);
@@ -457,6 +471,7 @@ function pickupObject(o)
 //  ditherShader.uniforms.mainG.value = 0;
 //  ditherShader.uniforms.mainB.value = 0;
   SetDitherColor(0.8, 0, 0);
+  holdingObject = true;
 }
 
 function dropObject(o)
@@ -470,6 +485,8 @@ function dropObject(o)
   doggie.visible = false;
 
   SetDitherColor(0.69, 0.04, 0.86);
+  holdingObject = false;
+  //vignetteShader.uniforms.vignetteStrength.value = 0;
 }
 
 var hasFood = false;
@@ -625,7 +642,20 @@ function animate() {
       });
     }
 }
+  
+  // lerp vignette in if holding object
+  if(holdingObject)
+  {
+    //delta = 
+    const delta = ( time - prevTime ) / 1000;
+    LerpVignetteIn(delta, 0.9);
+  }
 
+  else if(vignetteShader.uniforms.vignetteStrength.value != 0)
+  {
+    const delta = ( time - prevTime ) / 1000;
+    LerpVignetteOut(delta, 0)
+  }
   prevTime = time;
 
 	// required if controls.enableDamping or controls.autoRotate are set to true

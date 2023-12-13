@@ -10,6 +10,7 @@ THREE.DitherShader = {
 
     uniforms: {
         "tDiffuse": { value: null },
+        "ditherResolution": { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }, // Added resolution uniform
         "amount":   { value: 1.0 },
         "mainR" : { value: 0.69 },                    //0.69, 0.04, 0.86
         "mainG" : { value: 0.04},
@@ -24,6 +25,7 @@ THREE.DitherShader = {
     ].join( "\n" ),
     fragmentShader: [
         "uniform sampler2D tDiffuse;",
+        "uniform vec2 ditherResolution;",
         "uniform float amount;",
         "uniform float mainR;",
         "uniform float mainG;",
@@ -39,6 +41,7 @@ THREE.DitherShader = {
         "if(amount > 0.5){",
             "vec4 color = texture2D( tDiffuse, vUv );",
             "vec4 fragPos = gl_FragCoord;",
+            "vec2 screenPos = gl_FragCoord.xy / ditherResolution.xy;",
 
             // Converting to less colors (grayscale) using Gamma formula
             //"float grey = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;",
