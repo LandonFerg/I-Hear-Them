@@ -4,6 +4,7 @@ var volume = 1;
 var levelNumber = 1;
 var playerIdleTime = 4; // how long until player is considered idle
 var currentTime = 0;
+var mixer; // Define globally
 
 // TOOD: make fullscreen button that simply scales the canvas size (same resolution)
 
@@ -17,6 +18,9 @@ function onWindowResize() {
     var height = canvas.clientHeight;
     renderer.setSize(width, height);
     composer.setSize(width, height);
+
+    camera.aspect = width / height; // Update the camera's aspect ratio
+    camera.updateProjectionMatrix();
 
     renderer.setPixelRatio( window.devicePixelRatio); // (0.25 is good) change resolution
 }
@@ -222,11 +226,27 @@ var canvas = renderer.domElement;
 var vignetteShader = new THREE.ShaderPass( THREE.VignetteShader );
 vignetteShader.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
 
+var edgeDetectionShader = new THREE.ShaderPass( THREE.EdgeDetectionShader );
+// Create a render target
+const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+
+// Render scene to render target
+renderer.setRenderTarget(renderTarget);
+renderer.render(scene, camera);
+renderer.setRenderTarget(null); // Reset to render to canvas
+
+// Set the render target texture as the input to your edge detection shader
+edgeDetectionShader.uniforms["tDiffuse"].value = renderTarget.texture;
+
 
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
 ditherShader.uniforms['ditherResolution'].value.set(canvas.clientWidth, canvas.clientHeight);
 
+// Testing edge detection for more distinct look
+//composer.addPass( edgeDetectionShader ); // enable dither effect
+
 composer.addPass( ditherShader ); // enable dither effect
+//composer.addPass( edgeDetectionShader ); // enable dither effect
 composer.addPass( vignetteShader ); // enable dither effect
 
 onWindowResize();
