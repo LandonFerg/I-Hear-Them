@@ -10,6 +10,18 @@ var currentTime = 0;
 var renderer = new THREE.WebGLRenderer({canvas: gameCanvas});
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+// Event listener for window resize to update shader resolutions
+window.addEventListener('resize', onWindowResize, false);
+function onWindowResize() {
+    var width = canvas.clientWidth;
+    var height = canvas.clientHeight;
+    renderer.setSize(width, height);
+    composer.setSize(width, height);
+
+    renderer.setPixelRatio( window.devicePixelRatio); // (0.25 is good) change resolution
+}
+
+
 renderer.setPixelRatio( window.devicePixelRatio * 1); // (0.25 is good) change resolution
 renderer.physicallyCorrectLights = true;
 // If texture is used for color information, set colorspace.  
@@ -208,11 +220,18 @@ bloomPass.radius = bloomProps.bloomRadius;
 var canvas = renderer.domElement;
 
 var vignetteShader = new THREE.ShaderPass( THREE.VignetteShader );
-composer.addPass( vignetteShader ); // enable dither effect
+vignetteShader.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+
 
 var ditherShader = new THREE.ShaderPass( THREE.DitherShader );
-ditherShader.uniforms.ditherResolution.value.set(canvas.clientWidth * 2, canvas.clientHeight * 2);
+ditherShader.uniforms['ditherResolution'].value.set(canvas.clientWidth, canvas.clientHeight);
+
 composer.addPass( ditherShader ); // enable dither effect
+composer.addPass( vignetteShader ); // enable dither effect
+
+onWindowResize();
+
+
 
 // controls
 var controls = new THREE.PointerLockControls(player.camera, renderer.domElement ); // contr  ol cam
@@ -331,6 +350,8 @@ function resizeCanvasToDisplaySize() {
 
     // update any render target sizes here
   }
+
+  onWindowResize();
 
   //vignetteShader.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
   //ditherShader.uniforms.resolution.value.set(canvas.width, canvas.height);
